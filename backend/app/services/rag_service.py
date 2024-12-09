@@ -1,5 +1,5 @@
-import chromadb
 from chromadb.utils import embedding_functions
+import chromadb
 import os
 from dotenv import load_dotenv
 
@@ -7,23 +7,22 @@ load_dotenv()
 
 class RAGService:
     def __init__(self):
-        self.client = chromadb.PersistentClient(path="./data/vector_store")
-        self.collection = self.client.get_collection(
-            name="course_materials",
-            embedding_function=embedding_functions.OpenAIEmbeddingFunction(
-                api_key=os.getenv("OPENAI_API_KEY"),
-                model_name="text-embedding-ada-002"
-            )
-        )
+        try:
+            self.client = chromadb.PersistentClient(path="./data/vector_store")
+            self.collection = self.client.get_collection(name="course_materials")
+        except Exception as e:
+            print(f"Error initializing RAG service: {str(e)}")
+            raise e
     
     def get_context(self, query, n_results=3):
         try:
             results = self.collection.query(
                 query_texts=[query],
-                n_results=n_results
+                n_results=n_results,
+                include=['documents', 'metadatas']
             )
             
-            if results and results['documents']:
+            if results and results['documents'] and results['documents'][0]:
                 return " ".join(results['documents'][0])
             return ""
             
@@ -32,15 +31,18 @@ class RAGService:
             return ""
     
     def get_source_info(self, context):
-        # This is a simple implementation - you might want to enhance this
         try:
+            if not context:
+                return None
+                
             results = self.collection.query(
-                query_texts=[context[:1000]],  # Use first 1000 chars to match
-                n_results=1
+                query_texts=[context[:1000]],
+                n_results=1,
+                include=['metadatas']
             )
             
-            if results and results['metadatas']:
-                return results['metadatas'][0][0]  # Return first metadata entry
+            if results and results['metadatas'] and results['metadatas'][0]:
+                return results['metadatas'][0][0]
             return None
             
         except Exception as e:

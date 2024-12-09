@@ -28,7 +28,7 @@ const ChatContainer = () => {
         setMessages(prev => [...prev, userMessage]);
         setInputMessage('');
 
-        const response = await fetch('http://127.0.0.1:5000/api/chat', { // Note: using 127.0.0.1 instead of localhost
+        const response = await fetch('http://127.0.0.1:5000/api/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -45,6 +45,9 @@ const ChatContainer = () => {
         const assistantMessage = {
             type: 'assistant',
             content: data.message,
+            sources: data.sources,
+            used_context: data.used_context,
+            context_preview: data.context_preview,
             timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, assistantMessage]);
@@ -59,7 +62,7 @@ const ChatContainer = () => {
     } finally {
         setIsLoading(false);
     }
-};
+  };
 
   return (
     <div className="flex flex-col h-[600px] max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
@@ -83,9 +86,30 @@ const ChatContainer = () => {
               }`}
             >
               <p className="text-sm">{message.content}</p>
-              {message.sources && (
-                <div className="mt-2 text-xs opacity-75">
-                  <p>Source: {message.sources.filename}</p>
+              {message.type === 'assistant' && (
+                <div className="mt-2 text-xs text-gray-600">
+                  {message.used_context && (
+                    <div className="mb-1">
+                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+                        Using Course Materials
+                      </span>
+                    </div>
+                  )}
+                  {message.sources && message.sources.filename && (
+                    <p className="mb-1">
+                      📄 Source: {message.sources.filename}
+                    </p>
+                  )}
+                  {message.context_preview && (
+                    <details className="mt-1">
+                      <summary className="cursor-pointer text-blue-600 hover:text-blue-700">
+                        View Reference Context
+                      </summary>
+                      <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700">
+                        {message.context_preview}...
+                      </div>
+                    </details>
+                  )}
                 </div>
               )}
             </div>
