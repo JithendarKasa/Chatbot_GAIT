@@ -62,39 +62,34 @@ class SearchService:
             # Calculate similarities
             similarities = cosine_similarity(query_vector, self.vectors)[0]
             
-            # Get top results
-            top_indices = np.argsort(similarities)[-n_results*2:][::-1]  # Get more results initially
+            # Set a higher similarity threshold for relevance
+            similarity_threshold = 0.3  # Adjust as needed
+            
+            # Get top results that meet the similarity threshold
+            top_indices = np.argsort(similarities)[::-1]
+            top_indices = [idx for idx in top_indices if similarities[idx] >= similarity_threshold]
             
             context = ""
             sources = []
             seen_files = set()
             
-            # First, prioritize files that match the topic
+            # Collect up to `n_results` relevant sources
             for idx in top_indices:
-                if similarities[idx] > 0.1:  # Similarity threshold
-                    doc = self.documents[idx]
-                    if "metabolism" in doc['source'].lower() and doc['source'] not in seen_files:
-                        context += f"\nFrom {doc['source']}:\n{doc['content']}\n"
-                        sources.append({
-                            'filename': doc['source'],
-                            'similarity': float(similarities[idx])
-                        })
-                        seen_files.add(doc['source'])
+                if len(sources) >= n_results:
+                    break
+                doc = self.documents[idx]
+                if doc['source'] not in seen_files:
+                    context += f"\nFrom {doc['source']}:\n{doc['content']}\n"
+                    sources.append({
+                        'filename': doc['source'],
+                        'similarity': float(similarities[idx])
+                    })
+                    seen_files.add(doc['source'])
             
-            # If we haven't found enough relevant sources, add other high-scoring documents
-            if len(sources) < n_results:
-                for idx in top_indices:
-                    if similarities[idx] > 0.1:  # Similarity threshold
-                        doc = self.documents[idx]
-                        if doc['source'] not in seen_files:
-                            context += f"\nFrom {doc['source']}:\n{doc['content']}\n"
-                            sources.append({
-                                'filename': doc['source'],
-                                'similarity': float(similarities[idx])
-                            })
-                            seen_files.add(doc['source'])
-                            if len(sources) >= n_results:
-                                break
+            # If no relevant sources were found, return an empty response
+            if not sources:
+                print("No relevant sources found for the query.")
+                return {'context': "No relevant content found.", 'sources': []}
             
             print(f"Found {len(sources)} relevant sources")
             return {

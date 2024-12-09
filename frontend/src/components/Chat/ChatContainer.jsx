@@ -5,7 +5,7 @@ const ChatContainer = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -19,48 +19,66 @@ const ChatContainer = () => {
     if (!inputMessage.trim() || isLoading) return;
 
     try {
-        setIsLoading(true);
-        const userMessage = {
-            type: 'user',
-            content: inputMessage,
-            timestamp: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, userMessage]);
-        setInputMessage('');
+      setIsLoading(true);
+      const userMessage = {
+        type: 'user',
+        content: inputMessage,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setInputMessage('');
 
-        const response = await fetch('http://127.0.0.1:5000/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message: inputMessage })
-        });
+      const response = await fetch('http://127.0.0.1:5000/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: inputMessage,
+          audio_requested: true, // Add this line
+        }),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to get response');
-        }
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get response');
+      }
 
-        const assistantMessage = {
-            type: 'assistant',
-            content: data.message,
-            sources: data.sources,
-            used_context: data.used_context,
-            context_preview: data.context_preview,
-            timestamp: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
+      const assistantMessage = {
+        type: 'assistant',
+        content: data.message,
+        sources: data.sources,
+        used_context: data.used_context,
+        context_preview: data.context_preview,
+        audio: data.audio, // Add audio data
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-        console.error('Chat error:', error);
-        const errorMessage = {
-            type: 'error',
-            content: 'Sorry, there was an error processing your request.',
-            timestamp: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, errorMessage]);
+      console.error('Chat error:', error);
+      const errorMessage = {
+        type: 'error',
+        content: 'Sorry, there was an error processing your request.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const playAudio = (audioBase64) => {
+    if (!audioBase64) {
+      console.log('No audio data available');
+      return;
+    }
+    try {
+      console.log('Playing audio...');
+      const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+      audio.play();
+    } catch (error) {
+      console.error('Error playing audio:', error);
     }
   };
 
@@ -69,12 +87,14 @@ const ChatContainer = () => {
       <div className="p-4 border-b">
         <h1 className="text-xl font-semibold">PTRS:6224 Course Assistant</h1>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${
+              message.type === 'user' ? 'justify-end' : 'justify-start'
+            }`}
           >
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
@@ -88,6 +108,23 @@ const ChatContainer = () => {
               <p className="text-sm">{message.content}</p>
               {message.type === 'assistant' && (
                 <div className="mt-2 text-xs text-gray-600">
+                  {/* Audio button - Add this */}
+                  <button
+                    onClick={() => playAudio(message.audio)}
+                    className="mb-2 px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                    </svg>
+                    Listen to Response
+                  </button>
+
+                  {/* Rest of your existing message display */}
                   {message.used_context && (
                     <div className="mb-1">
                       <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
@@ -96,9 +133,7 @@ const ChatContainer = () => {
                     </div>
                   )}
                   {message.sources && message.sources.filename && (
-                    <p className="mb-1">
-                      📄 Source: {message.sources.filename}
-                    </p>
+                    <p className="mb-1">📄 Source: {message.sources.filename}</p>
                   )}
                   {message.context_preview && (
                     <details className="mt-1">

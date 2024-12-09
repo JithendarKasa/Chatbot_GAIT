@@ -33,3 +33,6 @@ venv/
 # Project specific
 data/vector_store/
 data/course_materials/
+
+.env
+google_credentials.json
