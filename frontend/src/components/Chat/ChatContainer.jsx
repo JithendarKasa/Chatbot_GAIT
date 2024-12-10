@@ -140,11 +140,11 @@ const ChatContainer = () => {
       {message.audio && (
         <button
           onClick={() => playAudio(message.audio)}
-          className="mb-2 px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
+          className="mb-1 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600 flex items-center gap-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
+            className="h-2 w-2"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
