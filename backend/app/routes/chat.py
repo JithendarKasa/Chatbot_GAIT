@@ -3,6 +3,7 @@ import openai
 import os
 from dotenv import load_dotenv
 from ..services.search_service import SearchService
+from ..services.image_service import ImageService  # Added import for ImageService
 from google.cloud import texttospeech
 import base64
 
@@ -12,10 +13,12 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 chat_bp = Blueprint('chat', __name__)
 try:
     search_service = SearchService()
+    image_service = ImageService()  # Initialize ImageService
     tts_client = texttospeech.TextToSpeechClient()
 except Exception as e:
     print(f"Warning: Service initialization failed: {str(e)}")
     search_service = None
+    image_service = None
     tts_client = None
 
 def generate_audio(text):
@@ -114,4 +117,33 @@ def chat():
     
     except Exception as e:
         print(f"Error in chat endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@chat_bp.route('/api/generate-image', methods=['POST'])
+def generate_image():
+    try:
+        data = request.get_json()
+        prompt = data.get('prompt')
+        
+        image_base64 = image_service.generate_image(prompt)
+        
+        # Add descriptive information
+        description = f"Generated anatomical illustration showing {prompt}. "
+        description += "This medical-style diagram includes detailed labeling and precise anatomical structures. "
+        description += "You can use this illustration for studying or reference purposes."
+        
+        if image_base64:
+            return jsonify({
+                "image": image_base64,
+                "description": description,
+                "success": True
+            })
+        else:
+            return jsonify({
+                "error": "Failed to generate image",
+                "success": False
+            }), 500
+            
+    except Exception as e:
+        print(f"Error in generate_image endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 500
