@@ -1,0 +1,9 @@
+flask
+flask_cors
+pathlib
+chromadb
+openai
+python-dotenv  # Replace 'dotenv' with 'python-dotenv'
+pypdf
+google-cloud-texttospeech
+requests
