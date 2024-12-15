@@ -13,7 +13,7 @@ if not OPENAI_API_KEY:
 
 def initialize_chromadb():
     """Initialize ChromaDB client and collection."""
-    client = chromadb.PersistentClient(path="./data/vector_store")
+    client = chromadb.PersistentClient(path=r"backend\data\vector_store")
     openai_embedding = embedding_functions.OpenAIEmbeddingFunction(
         api_key=OPENAI_API_KEY,
         model_name="text-embedding-ada-002",
