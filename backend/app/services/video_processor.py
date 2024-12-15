@@ -4,7 +4,6 @@ from chromadb.utils import embedding_functions
 from dotenv import load_dotenv
 
 
-print(os.path.exists(r"C:\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"))
 # Load environment variables
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
