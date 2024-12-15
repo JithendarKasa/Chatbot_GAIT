@@ -19,3 +19,9 @@
 2024-12-12 20:27:17,069 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\Friday_ September 13_ 2024 at 7_44_33 AM.mp4
 2024-12-12 20:27:25,238 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\6.Motor Units #6.mp4. Status code: 400
 2024-12-12 20:27:25,251 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\Friday_ September 20_ 2024 at 7_44_59 AM.mp4
+2024-12-14 20:32:48,060 - INFO - Verifying API Configuration:
+2024-12-14 20:32:48,060 - INFO - Whisper API URL: https://api.openai.com/v1/audio/transcriptions
+2024-12-14 20:32:48,060 - INFO - API Key (first 4 chars): sk-p
+2024-12-14 20:32:49,184 - INFO - Successfully connected to OpenAI API
+2024-12-14 20:32:49,185 - ERROR - An error occurred during processing: 'VideoProcessor' object has no attribute 'initialize_chroma'
+2024-12-14 20:32:49,185 - ERROR - Fatal error: 'VideoProcessor' object has no attribute 'initialize_chroma'
