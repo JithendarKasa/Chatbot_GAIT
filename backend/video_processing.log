@@ -1,0 +1,27 @@
+2024-12-12 20:24:51,153 - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2024-12-12 20:24:51,322 - INFO - ChromaDB client initialized
+2024-12-12 20:24:51,515 - INFO - Found existing collection
+2024-12-12 20:24:51,515 - INFO - Found 17 video files
+2024-12-12 20:24:51,515 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\1.Background (PAO) #1.mp4
+2024-12-12 20:24:51,515 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\2.Length-Tension #2.mp4
+2024-12-12 20:24:51,515 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\3.Force-Velocity #3.mp4
+2024-12-12 20:25:19,262 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\1.Background (PAO) #1.mp4. Status code: 400
+2024-12-12 20:25:19,274 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\4.Eccentrics #4.mp4
+2024-12-12 20:25:29,622 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\2.Length-Tension #2.mp4. Status code: 400
+2024-12-12 20:25:29,630 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\5.Muscle Activation #5.mp4
+2024-12-12 20:26:31,175 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\3.Force-Velocity #3.mp4. Status code: 400
+2024-12-12 20:26:31,196 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\6.Motor Units #6.mp4
+2024-12-12 20:26:43,596 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\4.Eccentrics #4.mp4. Status code: 400
+2024-12-12 20:26:43,612 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\7.Plasticity and Muscle Mechanics #7.mp4
+2024-12-12 20:26:45,293 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\5.Muscle Activation #5.mp4. Status code: 400
+2024-12-12 20:26:45,313 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\Friday_ August 30_ 2024 at 7_47_40 AM.mp4
+2024-12-12 20:27:17,061 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\7.Plasticity and Muscle Mechanics #7.mp4. Status code: 400
+2024-12-12 20:27:17,069 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\Friday_ September 13_ 2024 at 7_44_33 AM.mp4
+2024-12-12 20:27:25,238 - ERROR - Failed to transcribe video C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\6.Motor Units #6.mp4. Status code: 400
+2024-12-12 20:27:25,251 - INFO - Transcribing video (attempt 1): C:\Users\musku\Links\Pendrive\Shields course Fall 2024\class discussion videos\Friday_ September 20_ 2024 at 7_44_59 AM.mp4
+2024-12-14 20:32:48,060 - INFO - Verifying API Configuration:
+2024-12-14 20:32:48,060 - INFO - Whisper API URL: https://api.openai.com/v1/audio/transcriptions
+2024-12-14 20:32:48,060 - INFO - API Key (first 4 chars): sk-p
+2024-12-14 20:32:49,184 - INFO - Successfully connected to OpenAI API
+2024-12-14 20:32:49,185 - ERROR - An error occurred during processing: 'VideoProcessor' object has no attribute 'initialize_chroma'
+2024-12-14 20:32:49,185 - ERROR - Fatal error: 'VideoProcessor' object has no attribute 'initialize_chroma'
