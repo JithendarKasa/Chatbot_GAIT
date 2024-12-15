@@ -41,6 +41,7 @@ const ChatContainer = () => {
       });
 
       const data = await response.json();
+      console.log("Response data:", data); // Debug log
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to get response");
@@ -52,6 +53,7 @@ const ChatContainer = () => {
         sources: data.sources,
         used_context: data.used_context,
         context_preview: data.context_preview,
+        is_course_related: data.is_course_related,
         audio: data.audio,
         timestamp: new Date().toISOString(),
       };
@@ -111,57 +113,154 @@ const ChatContainer = () => {
     }
   };
 
-  const playAudio = (audioBase64) => {
-    if (!audioBase64) {
-      console.log("No audio data available");
-      return;
-    }
-    try {
-      console.log("Playing audio...");
-      const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
-      audio.play();
-    } catch (error) {
-      console.error("Error playing audio:", error);
-    }
-  };
+  const MessageContent = ({ message }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [showResume, setShowResume] = useState(false);
+    const audioRef = useRef(null);
 
-  const MessageContent = ({ message }) => (
-    <>
-      <p className="text-sm">{message.content}</p>
-      {message.image && (
-        <div className="mt-2">
-          <img
-            src={`data:image/png;base64,${message.image}`}
-            alt="Generated illustration"
-            className="rounded-lg max-w-full"
-          />
-        </div>
-      )}
-      {message.audio && (
-        <button
-          onClick={() => playAudio(message.audio)}
-          className="mb-1 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600 flex items-center gap-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-2 w-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-          </svg>
-          Listen to Response
-        </button>
-      )}
-    </>
-  );
+    const toggleAudio = (audioBase64) => {
+      if (!audioBase64) {
+        console.log("No audio data available");
+        return;
+      }
+
+      try {
+        if (!audioRef.current) {
+          audioRef.current = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+
+          // Add event listeners
+          audioRef.current.addEventListener("ended", () => {
+            setIsPlaying(false);
+            setShowResume(false);
+          });
+
+          audioRef.current.addEventListener("error", (error) => {
+            console.error("Error playing audio:", error);
+            setIsPlaying(false);
+            setShowResume(false);
+          });
+        }
+
+        if (isPlaying) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+          setShowResume(true);
+        } else {
+          audioRef.current.play();
+          setIsPlaying(true);
+          setShowResume(false);
+        }
+      } catch (error) {
+        console.error("Error handling audio:", error);
+        setIsPlaying(false);
+        setShowResume(false);
+      }
+    };
+
+    const restartAudio = () => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+        setIsPlaying(true);
+        setShowResume(false);
+      }
+    };
+
+    // Cleanup audio on unmount
+    useEffect(() => {
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+      };
+    }, []);
+
+    return (
+      <div>
+        <p className="text-sm mb-2">{message.content}</p>
+        {message.type === "assistant" && (
+          <div className="mt-2 space-y-2">
+            {message.used_context && message.is_course_related && (
+              <div className="flex flex-col gap-2">
+                {message.sources && (
+                  <p className="text-xs text-gray-600">
+                    📚 Source: {message.sources.filename}
+                  </p>
+                )}
+                {message.context_preview && (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-blue-600 hover:text-blue-700">
+                      View Reference Context
+                    </summary>
+                    <div className="mt-2 p-2 bg-gray-50 rounded text-gray-700">
+                      {message.context_preview}...
+                    </div>
+                  </details>
+                )}
+              </div>
+            )}
+            {message.image && (
+              <div className="mt-2">
+                <img
+                  src={`data:image/png;base64,${message.image}`}
+                  alt="Generated illustration"
+                  className="rounded-lg max-w-full"
+                />
+              </div>
+            )}
+            {message.audio && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleAudio(message.audio)}
+                  className="px-3 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600 flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    {isPlaying ? (
+                      // Pause icon
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    ) : (
+                      // Play/Resume icon
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                        clipRule="evenodd"
+                      />
+                    )}
+                  </svg>
+                  {isPlaying ? "Stop" : showResume ? "Resume" : "Listen to Response"}
+                </button>
+                {showResume && (
+                  <button
+                    onClick={restartAudio}
+                    className="px-3 py-1 bg-green-500 text-white rounded-md text-xs hover:bg-green-600"
+                  >
+                    Start Over
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col h-[90vh] max-w-5xl mx-auto bg-white rounded-lg shadow-lg">
       <div className="p-4 border-b">
         <h1 className="text-xl font-semibold">PTRS:6224 Course Assistant</h1>
       </div>
-  
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
           <div
@@ -185,7 +284,7 @@ const ChatContainer = () => {
         ))}
         <div ref={messagesEndRef} />
       </div>
-  
+
       <form onSubmit={handleSubmit} className="p-4 border-t">
         <div className="flex gap-2">
           <input
@@ -214,7 +313,7 @@ const ChatContainer = () => {
         </div>
       </form>
     </div>
-  );  
+  );
 };
 
 export default ChatContainer;

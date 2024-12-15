@@ -3,7 +3,7 @@ import openai
 import os
 from dotenv import load_dotenv
 from ..services.search_service import SearchService
-from ..services.image_service import ImageService  # Added import for ImageService
+from ..services.image_service import ImageService
 from google.cloud import texttospeech
 import base64
 
@@ -13,13 +13,49 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 chat_bp = Blueprint('chat', __name__)
 try:
     search_service = SearchService()
-    image_service = ImageService()  # Initialize ImageService
+    image_service = ImageService()
     tts_client = texttospeech.TextToSpeechClient()
 except Exception as e:
     print(f"Warning: Service initialization failed: {str(e)}")
     search_service = None
     image_service = None
     tts_client = None
+
+def is_course_related(question, context):
+    """
+    Determine if a question is course-related based on context and keywords.
+    """
+    # List of non-course keywords
+    general_keywords = [
+        'weather', 'time', 'hello', 'hi', 'hey', 
+        'how are you', 'what\'s up', 'good morning',
+        'good afternoon', 'good evening', 'thanks',
+        'thank you', 'bye', 'goodbye', 'who are you'
+    ]
+    
+    question_lower = question.lower()
+    
+    # If question contains general keywords, it's not course-related
+    if any(keyword in question_lower for keyword in general_keywords):
+        return False
+    
+    # If meaningful context was found, it's course-related
+    if context and len(context.strip()) > 0:
+        meaningful_context = len(context.split()) > 10
+        return meaningful_context
+    
+    # List of course-specific keywords
+    course_keywords = [
+        'ptrs', 'muscle', 'neural', 'plasticity', 'motor unit', 
+        'metabolism', 'epigenetics', 'rehabilitation', 'spinal cord',
+        'biomechanics', 'motor control', 'hill equation', 'exercise',
+        'physical therapy', 'movement', 'strength training',
+        'fitness', 'anatomy', 'physiology', 'health', 'medical',
+        'patient', 'treatment', 'therapy', 'clinical', 'research',
+        'lecture', 'course', 'exam', 'assignment', 'study'
+    ]
+    
+    return any(keyword in question_lower for keyword in course_keywords)
 
 def generate_audio(text):
     try:
@@ -40,7 +76,6 @@ def generate_audio(text):
             audio_config=audio_config
         )
         
-        # Convert audio content to base64
         audio_base64 = base64.b64encode(response.audio_content).decode('utf-8')
         return audio_base64
         
@@ -53,7 +88,7 @@ def chat():
     try:
         data = request.get_json()
         user_message = data.get('message')
-        audio_requested = data.get('audio_requested', False)  # New parameter
+        audio_requested = data.get('audio_requested', False)
         print(f"\nReceived question: {user_message}")
         
         context = ""
@@ -72,14 +107,20 @@ def chat():
         else:
             print("Search service not initialized!")
         
+        # Check if question is course-related
+        is_course_question = is_course_related(user_message, context)
+        print(f"Is course-related question: {is_course_question}")
+        
         # Create system message
         system_message = (
             "You are a knowledgeable teaching assistant for the PTRS:6224 course. "
         )
-        if context:
+        if context and is_course_question:
             system_message += f"\nUse this course material to answer: {context}"
+        elif is_course_question:
+            system_message += "\nAnswer based on general knowledge about this topic in physical therapy and rehabilitation science."
         else:
-            system_message += "\nProvide general guidance if no specific course material is available."
+            system_message = "You are a helpful assistant. Provide a general response as this question is not related to the course material."
         
         # Get response from OpenAI
         response = openai.ChatCompletion.create(
@@ -94,7 +135,7 @@ def chat():
         
         message_content = response.choices[0].message.content
         
-        # Generate audio if requested and TTS client is available
+        # Generate audio if requested
         audio_base64 = None
         if audio_requested and tts_client:
             try:
@@ -107,11 +148,13 @@ def chat():
             except Exception as e:
                 print(f"Error generating audio: {str(e)}")
         
+        # Only include sources and context if it's a course-related question
         return jsonify({
             "message": message_content,
-            "sources": sources[0] if sources else None,
-            "used_context": bool(context),
-            "context_preview": context[:200] if context else None,
+            "sources": sources[0] if (sources and is_course_question) else None,
+            "used_context": bool(context) and is_course_question,
+            "context_preview": context[:200] if (context and is_course_question) else None,
+            "is_course_related": is_course_question,
             "audio": audio_base64
         })
     
