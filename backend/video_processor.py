@@ -37,7 +37,12 @@ def verify_ffmpeg_setup():
 
 # --- Initialize ChromaDB ---
 def initialize_chromadb():
-    client = chromadb.PersistentClient(path="./data/vector_store")
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Create the data directory if it doesn't exist
+    data_dir = os.path.join(backend_dir, "data", "vector_store")
+    os.makedirs(data_dir, exist_ok=True)
+    client = chromadb.PersistentClient(path=data_dir)
     openai_embedding = embedding_functions.OpenAIEmbeddingFunction(
         api_key=OPENAI_API_KEY,
         model_name="text-embedding-ada-002",
